@@ -1,0 +1,1673 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUXÉ — Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body {
+        margin: 0;
+        overflow-x: hidden;
+      }
+
+      /* ── LOGIN ── */
+      #login-screen {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--black);
+        position: relative;
+        overflow: hidden;
+      }
+      #login-screen::before {
+        content: "LUXÉ";
+        position: absolute;
+        font-family: var(--font-display);
+        font-size: 20rem;
+        font-weight: 700;
+        color: rgba(201, 168, 76, 0.04);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        white-space: nowrap;
+      }
+      .login-card {
+        background: var(--white);
+        width: 100%;
+        max-width: 420px;
+        padding: 48px 44px;
+        position: relative;
+        z-index: 2;
+        animation: slideUp 0.4s ease;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .login-logo {
+        font-family: var(--font-display);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .login-logo span {
+        color: var(--gold);
+      }
+      .login-subtitle {
+        font-size: 0.8rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--gray-400);
+        margin-bottom: 36px;
+      }
+      .login-error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        margin-bottom: 16px;
+        display: none;
+      }
+
+      /* ── DASHBOARD ── */
+      #dashboard-screen {
+        display: none;
+      }
+      .admin-topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .admin-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--black);
+      }
+
+      /* Product Form */
+      .product-desc-block {
+        background: var(--cream);
+        padding: 20px;
+        margin: 16px 0;
+        border-left: 3px solid var(--gold);
+      }
+      .product-desc-block h4 {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+        color: var(--black);
+      }
+      .desc-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .desc-field label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--gray-600);
+      }
+      .desc-field input,
+      .desc-field textarea,
+      .desc-field select {
+        padding: 10px 14px;
+        border: 1.5px solid var(--gray-200);
+        font-family: var(--font-body);
+        font-size: 0.88rem;
+        outline: none;
+        transition: border-color 0.2s;
+        background: var(--white);
+      }
+      .desc-field input:focus,
+      .desc-field textarea:focus {
+        border-color: var(--gold);
+      }
+      .size-guide-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .size-guide-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 6px;
+      }
+      .size-guide-header span {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--gray-600);
+      }
+      .img-upload-area {
+        border: 2px dashed var(--gray-200);
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        background: var(--gray-100);
+      }
+      .img-upload-area:hover {
+        border-color: var(--gold);
+      }
+      .img-preview {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .img-preview-item {
+        position: relative;
+        width: 80px;
+        height: 90px;
+      }
+      .img-preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .img-preview-item button {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: var(--danger);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        font-size: 0.65rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .shipping-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+      .shipping-table td,
+      .shipping-table th {
+        padding: 10px 14px;
+        border: 1px solid var(--gray-200);
+      }
+      .shipping-table th {
+        background: var(--gray-100);
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--gray-200);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .loading-overlay {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+      }
+      .upload-note {
+        font-size: 0.75rem;
+        color: var(--gray-400);
+        margin-top: 6px;
+      }
+      @media (max-width: 768px) {
+        .login-card {
+          margin: 20px;
+          padding: 36px 28px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ════ LOGIN SCREEN ════ -->
+    <div id="login-screen">
+      <div class="login-card">
+        <div class="login-logo">LUX<span>É</span></div>
+        <div class="login-subtitle">Admin Dashboard</div>
+        <div class="login-error" id="login-error">
+          Invalid email or password.
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input
+              type="email"
+              id="login-email"
+              placeholder="admin@example.com"
+              onkeydown="if (event.key === 'Enter') doLogin();"
+            />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              id="login-pw"
+              placeholder="••••••••"
+              onkeydown="if (event.key === 'Enter') doLogin();"
+            />
+          </div>
+          <button
+            class="btn btn-primary btn-full"
+            style="margin-top: 8px; padding: 16px"
+            onclick="doLogin()"
+            id="login-btn"
+          >
+            Sign In to Dashboard
+          </button>
+          <div style="text-align: center">
+            <a
+              href="index.html"
+              style="
+                font-size: 0.8rem;
+                color: var(--gray-400);
+                text-decoration: none;
+              "
+              >← Back to Store</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ DASHBOARD SCREEN ════ -->
+    <div id="dashboard-screen">
+      <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+          <div class="admin-logo">
+            LUX<span>É</span>
+            <span
+              style="
+                font-size: 0.65rem;
+                color: rgba(255, 255, 255, 0.4);
+                font-family: var(--font-body);
+                display: block;
+                margin-top: 2px;
+              "
+              >Admin Panel</span
+            >
+          </div>
+          <nav class="admin-nav">
+            <button
+              class="admin-nav-item active"
+              onclick="adminNav('dashboard', this)"
+            >
+              <span class="admin-nav-icon">📊</span> Dashboard
+            </button>
+            <button class="admin-nav-item" onclick="adminNav('orders', this)">
+              <span class="admin-nav-icon">📦</span> Orders
+            </button>
+            <button class="admin-nav-item" onclick="adminNav('products', this)">
+              <span class="admin-nav-icon">👗</span> Products
+            </button>
+            <button class="admin-nav-item" onclick="adminNav('coupons', this)">
+              <span class="admin-nav-icon">🎫</span> Coupons
+            </button>
+            <button
+              class="admin-nav-item"
+              onclick="adminNav('customers', this)"
+            >
+              <span class="admin-nav-icon">👥</span> Customers
+            </button>
+            <button
+              class="admin-nav-item"
+              onclick="adminNav('categories', this)"
+            >
+              <span class="admin-nav-icon">🗂️</span> Categories
+            </button>
+            <button class="admin-nav-item" onclick="adminNav('shipping', this)">
+              <span class="admin-nav-icon">🚚</span> Shipping
+            </button>
+            <div
+              style="
+                padding: 16px 24px;
+                margin-top: auto;
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+              "
+            >
+              <button
+                class="admin-nav-item"
+                onclick="doLogout()"
+                style="padding: 10px 0; width: 100%"
+              >
+                <span class="admin-nav-icon">🚪</span> Logout
+              </button>
+            </div>
+          </nav>
+        </aside>
+        <!-- Main -->
+        <div class="admin-main">
+          <div class="admin-topbar">
+            <h2 class="admin-page-title" id="admin-page-title">Dashboard</h2>
+            <div class="admin-topbar-user">
+              <div
+                style="font-size: 0.82rem; color: var(--gray-600)"
+                id="admin-username"
+              >
+                Admin
+              </div>
+              <div class="admin-avatar" id="admin-avatar-letter">A</div>
+            </div>
+          </div>
+          <div class="admin-content" id="admin-content-area">
+            <div class="loading-overlay"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast-container"></div>
+
+    <!-- MODAL -->
+    <div
+      class="modal-overlay"
+      id="modal-overlay"
+      onclick="if (event.target === this) closeModal();"
+    >
+      <div class="modal" id="modal-content"></div>
+    </div>
+
+    <script src="ckeditor/ckeditor.js"></script>
+    <!-- ════ FIREBASE + ADMIN SCRIPT ════ -->
+    <script type="module">
+      // ══════════════════════════════════════
+      //  FIREBASE CONFIG
+      // ══════════════════════════════════════
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyD2xtZZ9viQOxjmnYpzQhtjYne5l82FM3Y",
+        authDomain: "bluedreamitaly.firebaseapp.com",
+        projectId: "bluedreamitaly",
+        storageBucket: "bluedreamitaly.firebasestorage.app",
+        messagingSenderId: "145879085917",
+        appId: "1:145879085917:web:938008da8d22839f7c6eb4",
+        measurementId: "G-NX6V7GXSS1",
+      };
+
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        getDocs,
+        getDoc,
+        doc,
+        updateDoc,
+        deleteDoc,
+        query,
+        orderBy,
+        where,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import {
+        getStorage,
+        ref as storageRef,
+        uploadBytes,
+        getDownloadURL,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+      // ── INIT ──
+      const app = initializeApp(FIREBASE_CONFIG);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const storage = getStorage(app);
+
+      // ── STATE ──
+      window.ADMIN = {
+        user: null,
+        products: [],
+        orders: [],
+        coupons: [],
+        categories: [],
+        shipping: null,
+      };
+
+      // ══════════════════════════════════════
+      //  AUTH
+      // ══════════════════════════════════════
+      window.doLogin = async function () {
+        const email = document.getElementById("login-email").value.trim();
+        const pw = document.getElementById("login-pw").value;
+        const errEl = document.getElementById("login-error");
+        const btn = document.getElementById("login-btn");
+        errEl.style.display = "none";
+        btn.innerHTML = '<span class="spinner"></span>';
+        btn.disabled = true;
+        try {
+          const cred = await signInWithEmailAndPassword(auth, email, pw);
+          await enterDashboard(cred.user);
+        } catch (e) {
+          errEl.style.display = "block";
+          errEl.textContent =
+            e.code === "auth/invalid-credential" ||
+            e.code === "auth/wrong-password" ||
+            e.code === "auth/user-not-found"
+              ? "Invalid email or password."
+              : e.message || "Login failed.";
+        } finally {
+          btn.innerHTML = "Sign In to Dashboard";
+          btn.disabled = false;
+        }
+      };
+
+      window.doLogout = async function () {
+        await signOut(auth);
+        document.getElementById("login-screen").style.display = "flex";
+        document.getElementById("dashboard-screen").style.display = "none";
+        document.getElementById("login-email").value = "";
+        document.getElementById("login-pw").value = "";
+        ADMIN.user = null;
+      };
+
+      // Persist login across refresh
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          await enterDashboard(user);
+        }
+      });
+
+      async function enterDashboard(user) {
+        ADMIN.user = user;
+        const displayName =
+          user.displayName || user.email?.split("@")[0] || "Admin";
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("dashboard-screen").style.display = "block";
+        document.getElementById("admin-username").textContent = displayName;
+        document.getElementById("admin-avatar-letter").textContent =
+          displayName[0].toUpperCase();
+        await loadAllData();
+        renderDashboard();
+      }
+
+      async function loadAllData() {
+        try {
+          // Products
+          const pSnap = await getDocs(
+            query(collection(db, "products"), orderBy("createdAt", "desc")),
+          );
+          ADMIN.products = pSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        } catch (_) {
+          ADMIN.products = [];
+        }
+
+        try {
+          // Orders
+          const oSnap = await getDocs(
+            query(collection(db, "orders"), orderBy("createdAt", "desc")),
+          );
+          ADMIN.orders = oSnap.docs.map((d) => ({
+            firebaseId: d.id,
+            ...d.data(),
+          }));
+        } catch (_) {
+          ADMIN.orders = [];
+        }
+
+        try {
+          // Coupons
+          const cSnap = await getDocs(collection(db, "coupons"));
+          ADMIN.coupons = cSnap.docs.map((d) => ({
+            firebaseId: d.id,
+            ...d.data(),
+          }));
+        } catch (_) {
+          ADMIN.coupons = [];
+        }
+
+        try {
+          // Shipping settings
+          const sSnap = await getDocs(collection(db, "settings"));
+          sSnap.docs.forEach((d) => {
+            if (d.id === "shipping") ADMIN.shipping = d.data();
+          });
+        } catch (_) {}
+
+        try {
+          // Categories
+          const catSnap = await getDocs(collection(db, "categories"));
+          ADMIN.categories = catSnap.docs.map((d) => ({
+            firebaseId: d.id,
+            ...d.data(),
+          }));
+        } catch (_) {
+          ADMIN.categories = [];
+        }
+      }
+
+      // ══════════════════════════════════════
+      //  NAVIGATION
+      // ══════════════════════════════════════
+      window.adminNav = function (section, btn) {
+        document
+          .querySelectorAll(".admin-nav-item")
+          .forEach((b) => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        const titles = {
+          dashboard: "Dashboard",
+          orders: "Orders",
+          products: "Products",
+          categories: "Categories",
+          coupons: "Coupons",
+          customers: "Customers",
+          shipping: "Shipping Rates",
+        };
+        document.getElementById("admin-page-title").textContent =
+          titles[section] || section;
+        switch (section) {
+          case "dashboard":
+            renderDashboard();
+            break;
+          case "orders":
+            renderOrders();
+            break;
+          case "products":
+            renderProducts();
+            break;
+          case "categories":
+            renderCategories();
+            break;
+          case "coupons":
+            renderCoupons();
+            break;
+          case "customers":
+            renderCustomers();
+            break;
+          case "shipping":
+            renderShipping();
+            break;
+        }
+      };
+
+      // ══════════════════════════════════════
+      //  DASHBOARD OVERVIEW
+      // ══════════════════════════════════════
+      function renderDashboard() {
+        const orders = ADMIN.orders;
+        const products = ADMIN.products;
+        const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+        const pending = orders.filter((o) => o.status === "pending").length;
+        const container = document.getElementById("admin-content-area");
+
+        container.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-val">${orders.length}</div>
+        <div class="stat-label">Total Orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-val">${pending}</div>
+        <div class="stat-label">Pending Orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💶</div>
+        <div class="stat-val">€${revenue.toLocaleString()}</div>
+        <div class="stat-label">Total Revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👗</div>
+        <div class="stat-val">${products.length}</div>
+        <div class="stat-label">Products</div>
+      </div>
+    </div>
+
+    <div class="admin-table-card" style="margin-bottom:20px">
+      <div class="admin-table-head">
+        <h3>Recent Orders</h3>
+        <button class="btn btn-outline btn-sm" onclick="adminNav('orders',null)">View All</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody>
+            ${orders
+              .slice(0, 5)
+              .map(
+                (o) => `
+              <tr>
+                <td><strong>${o.id}</strong></td>
+                <td>${o.customer || "—"}</td>
+                <td>€${(o.total || 0).toLocaleString()}</td>
+                <td><span class="status-badge status-${o.status}">${o.status || "pending"}</span></td>
+                <td>${(o.date || "").substr(0, 10)}</td>
+                <td><button class="btn btn-outline btn-sm" onclick="editOrder('${o.firebaseId || o.id}')">View</button></td>
+              </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="admin-table-card">
+        <div class="admin-table-head"><h3>Quick Actions</h3></div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:12px">
+          <button class="btn btn-primary btn-full" onclick="showProductModal()">+ Add New Product</button>
+          <button class="btn btn-outline btn-full" onclick="adminNav('orders',null)">📦 Manage Orders</button>
+          <button class="btn btn-outline btn-full" onclick="adminNav('coupons',null)">🎫 Manage Coupons</button>
+          <button class="btn btn-outline btn-full" onclick="adminNav('shipping',null)">🚚 Shipping Rates</button>
+        </div>
+      </div>
+      <div class="admin-table-card">
+        <div class="admin-table-head"><h3>Recent Products</h3></div>
+        <div style="padding:0 24px 16px">
+          ${products
+            .slice(0, 5)
+            .map(
+              (p) => `
+            <div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-100)">
+              <img src="${p.images?.[0] || "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=80"}" style="width:44px;height:50px;object-fit:cover;background:var(--gray-100)">
+              <div style="flex:1">
+                <div style="font-size:0.85rem;font-weight:600">${p.name}</div>
+                <div style="font-size:0.75rem;color:var(--gray-400)">€${(p.price || 0).toLocaleString()} · ${p.category}</div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="showProductModal(ADMIN.products.find(x=>x.id==='${p.id}'))">Edit</button>
+            </div>`,
+            )
+            .join("")}
+        </div>
+      </div>
+    </div>`;
+      }
+
+      // ══════════════════════════════════════
+      //  ORDERS
+      // ══════════════════════════════════════
+      function renderOrders() {
+        const orders = ADMIN.orders;
+        document.getElementById("admin-content-area").innerHTML = `
+    <div class="admin-table-card">
+      <div class="admin-table-head">
+        <h3>All Orders (${orders.length})</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" placeholder="Search customer / order ID…" oninput="filterOrderTable(this.value)"
+            style="padding:8px 12px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none;width:200px">
+          <select id="order-status-filter" onchange="filterOrderTable('')"
+            style="padding:8px 12px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none">
+            <option value="">All Status</option>
+            <option>pending</option><option>confirmed</option><option>shipped</option><option>delivered</option><option>cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table" id="orders-table">
+          <thead>
+            <tr><th>Order ID</th><th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="orders-tbody">
+            ${orders.map(renderOrderRow).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+      }
+
+      function renderOrderRow(o) {
+        const fid = o.firebaseId || o.id;
+        const itemCount = Array.isArray(o.items)
+          ? o.items.reduce((s, i) => s + (i.qty || 1), 0)
+          : o.items || 0;
+        return `
+    <tr data-id="${o.id}" data-customer="${(o.customer || "").toLowerCase()}" data-status="${o.status || "pending"}">
+      <td><strong style="font-size:0.8rem">${o.id}</strong></td>
+      <td>
+        <div style="font-weight:600;font-size:0.88rem">${o.customer || "—"}</div>
+        <div style="font-size:0.75rem;color:var(--gray-400)">${o.email || ""}</div>
+      </td>
+      <td style="font-size:0.85rem">${o.phone || "—"}</td>
+      <td style="font-size:0.85rem">${itemCount} item${itemCount !== 1 ? "s" : ""}</td>
+      <td><strong>€${(o.total || 0).toLocaleString()}</strong></td>
+      <td style="font-size:0.82rem">${o.payment || "cod"}</td>
+      <td>
+        <select onchange="updateOrderStatus('${fid}',this.value)"
+          style="padding:5px 8px;font-size:0.78rem;border:1.5px solid var(--gray-200);font-family:var(--font-body);outline:none;cursor:pointer">
+          ${["pending", "confirmed", "shipped", "delivered", "cancelled"]
+            .map(
+              (s) =>
+                `<option value="${s}" ${o.status === s ? "selected" : ""}>${s}</option>`,
+            )
+            .join("")}
+        </select>
+      </td>
+      <td style="font-size:0.82rem;color:var(--gray-400)">${(o.date || "").substr(0, 10)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="editOrder('${fid}')">View</button></td>
+    </tr>`;
+      }
+
+      window.filterOrderTable = function (q) {
+        const statusFilter =
+          document.getElementById("order-status-filter")?.value || "";
+        document.querySelectorAll("#orders-tbody tr").forEach((row) => {
+          const customer = row.dataset.customer || "";
+          const id = row.dataset.id || "";
+          const status = row.dataset.status || "";
+          const matchesQ =
+            !q ||
+            customer.includes(q.toLowerCase()) ||
+            id.toLowerCase().includes(q.toLowerCase());
+          const matchesSt = !statusFilter || status === statusFilter;
+          row.style.display = matchesQ && matchesSt ? "" : "none";
+        });
+      };
+
+      window.updateOrderStatus = async function (fid, status) {
+        try {
+          await updateDoc(doc(db, "orders", fid), {
+            status,
+            updatedAt: new Date().toISOString(),
+          });
+          const o = ADMIN.orders.find((o) => (o.firebaseId || o.id) === fid);
+          if (o) {
+            o.status = status;
+          }
+          const row = document.querySelector(`#orders-tbody tr[data-id]`);
+          document.querySelectorAll("#orders-tbody tr").forEach((r) => {
+            if (r.querySelector(`select`) && r.dataset) {
+              const sel = r.querySelector("select");
+              if (sel && r.contains(sel)) r.dataset.status = status;
+            }
+          });
+          showToast("Order status updated", "success");
+        } catch (e) {
+          showToast("Failed to update: " + e.message, "error");
+        }
+      };
+
+      window.editOrder = function (fid) {
+        const o = ADMIN.orders.find((o) => (o.firebaseId || o.id) === fid);
+        if (!o) return;
+        const itemsHTML = Array.isArray(o.items)
+          ? o.items
+              .map(
+                (
+                  i,
+                ) => `<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:0.82rem">
+        <strong style="min-width:120px">${i.name}</strong>
+        <span style="color:var(--gray-400)">×${i.qty}</span>
+        <span>Size: ${i.size || "—"}</span>
+        <span style="margin-left:auto;font-weight:600">€${((i.price || 0) * (i.qty || 1)).toLocaleString()}</span>
+      </div>`,
+              )
+              .join("")
+          : "<p style='color:var(--gray-400);font-size:0.85rem'>No item details</p>";
+
+        showModal(`
+    <div class="modal-header">
+      <h3>Order: ${o.id}</h3>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--gray-400)">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.85rem;margin-bottom:16px">
+        <div><span style="color:var(--gray-400)">Customer:</span> <strong>${o.customer || "—"}</strong></div>
+        <div><span style="color:var(--gray-400)">Email:</span> ${o.email || "—"}</div>
+        <div><span style="color:var(--gray-400)">Phone:</span> ${o.phone || "—"}</div>
+        <div><span style="color:var(--gray-400)">Date:</span> ${(o.date || "").substr(0, 10)}</div>
+        <div style="grid-column:1/-1"><span style="color:var(--gray-400)">Address:</span> ${o.address || "—"}</div>
+        ${o.notes ? `<div style="grid-column:1/-1"><span style="color:var(--gray-400)">Notes:</span> ${o.notes}</div>` : ""}
+      </div>
+      <div style="margin-bottom:16px"><strong style="font-size:0.85rem">Items:</strong>${itemsHTML}</div>
+      ${
+        o.customerImages && o.customerImages.length
+          ? `
+        <div style="margin-bottom:16px">
+          <strong style="font-size:0.82rem">Customer Images:</strong>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            ${o.customerImages.map((src) => `<img src="${src}" style="width:80px;height:90px;object-fit:cover;border:1px solid var(--gray-200)">`).join("")}
+          </div>
+        </div>`
+          : ""
+      }
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.85rem;border-top:1px solid var(--gray-100);padding-top:12px">
+        <div><span style="color:var(--gray-400)">Subtotal:</span> €${((o.total || 0) - (o.shipping || 0)).toLocaleString()}</div>
+        <div><span style="color:var(--gray-400)">Shipping:</span> €${(o.shipping || 0).toLocaleString()}</div>
+        <div><strong>Total: €${(o.total || 0).toLocaleString()}</strong></div>
+        <div><span style="color:var(--gray-400)">Payment:</span> ${o.payment || "cod"}</div>
+      </div>
+      <div style="margin-top:20px">
+        <label style="font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:8px">Update Status</label>
+        <select id="status-update-select" style="padding:10px 14px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.88rem;outline:none;width:100%">
+          ${["pending", "confirmed", "shipped", "delivered", "cancelled"]
+            .map(
+              (s) =>
+                `<option value="${s}" ${o.status === s ? "selected" : ""}>${s}</option>`,
+            )
+            .join("")}
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      <button class="btn btn-gold" onclick="saveOrderStatus('${fid}')">Save Status</button>
+    </div>`);
+      };
+
+      window.saveOrderStatus = async function (fid) {
+        const status = document.getElementById("status-update-select")?.value;
+        if (!status) return;
+        await window.updateOrderStatus(fid, status);
+        closeModal();
+        renderOrders();
+      };
+
+      // ══════════════════════════════════════
+      //  PRODUCTS
+      // ══════════════════════════════════════
+      function renderProducts() {
+        const products = ADMIN.products;
+        document.getElementById("admin-content-area").innerHTML = `
+    <div class="admin-table-card">
+      <div class="admin-table-head">
+        <h3>Products (${products.length})</h3>
+        <button class="btn btn-primary btn-sm" onclick="showProductModal()">+ Add Product</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Sizes</th><th>Badge</th><th>Featured</th><th>Stock</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${products
+              .map(
+                (p) => `
+              <tr>
+                <td style="display:flex;gap:12px;align-items:center">
+                  <img src="${p.images?.[0] || "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=80"}" style="width:44px;height:50px;object-fit:cover;background:var(--gray-100)">
+                  <div>
+                    <div style="font-weight:600;font-size:0.88rem">${p.name}</div>
+                    <div style="font-size:0.72rem;color:var(--gray-400)">${p.id}</div>
+                  </div>
+                </td>
+                <td><span style="font-size:0.82rem;background:var(--cream);padding:3px 8px">${p.category || "—"}</span></td>
+                <td>
+                  <strong>€${(p.price || 0).toLocaleString()}</strong>
+                  ${p.originalPrice ? `<br><span style="font-size:0.75rem;text-decoration:line-through;color:var(--gray-400)">€${p.originalPrice.toLocaleString()}</span>` : ""}
+                </td>
+                <td style="font-size:0.8rem">${(p.sizes || []).join(", ") || "—"}</td>
+                <td>${p.badge ? `<span class="product-badge badge-${p.badge}" style="position:static;display:inline-block">${p.badge}</span>` : "—"}</td>
+                <td style="text-align:center">${p.featured ? "⭐" : "—"}</td>
+                <td style="text-align:center">${p.inStock !== false ? '<span style="color:var(--success);font-size:0.8rem">✓ In Stock</span>' : '<span style="color:var(--danger);font-size:0.8rem">✕ Out</span>'}</td>
+                <td>
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-outline btn-sm" onclick="showProductModal(ADMIN.products.find(x=>x.id==='${p.id}'))">Edit</button>
+                    <button class="btn btn-sm" style="background:var(--danger);color:white;border:none" onclick="deleteProduct('${p.id}')">Del</button>
+                  </div>
+                </td>
+              </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+      }
+
+      window.deleteProduct = async function (id) {
+        if (!confirm("Delete this product? This cannot be undone.")) return;
+        try {
+          await deleteDoc(doc(db, "products", id));
+          ADMIN.products = ADMIN.products.filter((p) => p.id !== id);
+          renderProducts();
+          showToast("Product deleted", "success");
+        } catch (e) {
+          showToast("Delete failed: " + e.message, "error");
+        }
+      };
+
+      // ── Product Form State ──
+      let productFormImages = []; // [{url, file?}]
+      let productSizeGuide = [];
+
+      window.showProductModal = function (p = null) {
+        productFormImages =
+          p && p.images ? p.images.map((url) => ({ url })) : [];
+        productSizeGuide = p && p.sizeGuide ? [...p.sizeGuide] : [];
+
+        showModal(`
+    <div class="modal-header">
+      <h3>${p ? "Edit Product" : "Add Product"}</h3>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--gray-400)">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto">
+
+      <div class="product-desc-block">
+        <h4>🏷️ Basic Information</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="desc-field" style="grid-column:1/-1">
+            <label>Product Name *</label>
+            <input type="text" id="pf-name" placeholder="e.g. Elegant Silk Blouse" value="${p?.name || ""}">
+          </div>
+          <div class="desc-field">
+            <label>Price (€) *</label>
+            <input type="number" id="pf-price" placeholder="299" value="${p?.price || ""}">
+          </div>
+          <div class="desc-field">
+            <label>Original Price (€)</label>
+            <input type="number" id="pf-oprice" placeholder="399" value="${p?.originalPrice || ""}">
+          </div>
+          <div class="desc-field">
+            <label>Category *</label>
+            <select id="pf-cat">
+              ${
+                ADMIN.categories.length
+                  ? ADMIN.categories
+                      .map(
+                        (c) =>
+                          `<option value="${c.slug}" ${p?.category === c.slug ? "selected" : ""}>${c.name}</option>`,
+                      )
+                      .join("")
+                  : `<option value="">— No categories yet —</option>`
+              }
+            </select>
+          </div>
+          <div class="desc-field">
+            <label>Badge</label>
+            <select id="pf-badge">
+              <option value="">None</option>
+              ${["new", "sale", "hot", "limited"]
+                .map(
+                  (b) =>
+                    `<option value="${b}" ${p?.badge === b ? "selected" : ""}>${b}</option>`,
+                )
+                .join("")}
+            </select>
+          </div>
+          <div class="desc-field" style="grid-column:1/-1">
+            <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:0.85rem;cursor:pointer">
+              <input type="checkbox" id="pf-featured" ${p?.featured ? "checked" : ""}> Featured Product
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:0.85rem;cursor:pointer;margin-top:6px">
+              <input type="checkbox" id="pf-instock" ${p?.inStock !== false ? "checked" : ""}> In Stock
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-desc-block">
+        <h4>📝 Product Description</h4>
+        <div class="desc-field">
+          <label>Description *</label>
+          <textarea id="pf-desc" rows="4" placeholder="Describe the product…">${p?.description || ""}</textarea>
+        </div>
+        <div class="desc-field">
+          <label>Material</label>
+          <input type="text" id="pf-material" placeholder="e.g. 100% Silk" value="${p?.material || ""}">
+        </div>
+        <div class="desc-field">
+          <label>Tags (comma separated)</label>
+          <input type="text" id="pf-tags" placeholder="elegant, blouse, women" value="${(p?.tags || []).join(", ")}">
+        </div>
+      </div>
+
+      <div class="product-desc-block">
+        <h4>📏 Measurement Size Guide</h4>
+        <div id="size-guide-list">${renderSizeGuideForm()}</div>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addSizeGuideRow()">+ Add Size Row</button>
+      </div>
+
+      <div class="product-desc-block">
+        <h4>🎨 Variations</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="desc-field">
+            <label>Available Sizes (comma separated)</label>
+            <input type="text" id="pf-sizes" placeholder="S, M, L, XL, 40, 42" value="${(p?.sizes || []).join(", ")}">
+          </div>
+          <div class="desc-field">
+            <label>Colors (hex codes, comma separated)</label>
+            <input type="text" id="pf-colors" placeholder="#1a1a1a, #ffffff, #c9a84c" value="${(p?.colors || []).join(", ")}">
+          </div>
+        </div>
+      </div>
+
+      <div class="product-desc-block">
+        <h4>🖼️ Product Images</h4>
+        <p class="upload-note" style="margin-bottom:12px">Upload 2–3 product images. Supported: JPG, PNG, WebP. Max 5MB each.</p>
+        <div class="img-upload-area" onclick="document.getElementById('pf-img-upload').click()">
+          <div style="font-size:2rem;margin-bottom:8px">📷</div>
+          <div style="font-size:0.85rem;color:var(--gray-600)">Click to upload images (2–3 recommended)</div>
+        </div>
+        <input type="file" id="pf-img-upload" accept="image/*" multiple style="display:none" onchange="handleImageUpload(this)">
+        <div class="desc-field" style="margin-top:12px">
+          <label>Or paste an image URL</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="pf-img-url" placeholder="https://…">
+            <button class="btn btn-outline btn-sm" onclick="addImageUrl()">Add</button>
+          </div>
+        </div>
+        <div class="img-preview" id="img-preview">${renderImagePreviews()}</div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" id="save-product-btn" onclick="saveProduct(${p ? `'${p.id}'` : "null"})">
+        ${p ? "Save Changes" : "Add Product"}
+      </button>
+    </div>`);
+        // Initialize CKEditor AFTER modal render
+        setTimeout(() => {
+          if (CKEDITOR.instances["pf-desc"]) {
+            CKEDITOR.instances["pf-desc"].destroy(true);
+          }
+
+          CKEDITOR.replace("pf-desc", {
+            height: 220,
+          });
+        }, 50);
+      };
+
+      function renderSizeGuideForm() {
+        if (!productSizeGuide.length)
+          return `<p style="font-size:0.8rem;color:var(--gray-400)">No size guide rows yet.</p>`;
+        return `
+    <div class="size-guide-header"><span>Size</span><span>Height</span><span>Width</span></div>
+    ${productSizeGuide
+      .map(
+        (row, i) => `
+      <div class="size-guide-row" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px">
+        <input class="sg-size" style="padding:8px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none" placeholder="40" value="${row.size}">
+        <input class="sg-height" style="padding:8px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none" placeholder="102 cm" value="${row.height}">
+        <input class="sg-width" style="padding:8px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none" placeholder="53 cm" value="${row.width}">
+        <button onclick="removeSizeRow(${i})" style="background:var(--danger);color:white;border:none;cursor:pointer;width:28px;height:28px;font-size:0.8rem;border-radius:50%">✕</button>
+      </div>`,
+      )
+      .join("")}`;
+      }
+
+      function renderImagePreviews() {
+        return productFormImages
+          .map(
+            (img, i) => `
+    <div class="img-preview-item">
+      <img src="${img.url}" alt="Product image">
+      <button onclick="removeImage(${i})">✕</button>
+    </div>`,
+          )
+          .join("");
+      }
+
+      window.addSizeGuideRow = function () {
+        collectSizeGuide();
+        productSizeGuide.push({ size: "", height: "", width: "" });
+        document.getElementById("size-guide-list").innerHTML =
+          renderSizeGuideForm();
+      };
+
+      window.removeSizeRow = function (i) {
+        collectSizeGuide();
+        productSizeGuide.splice(i, 1);
+        document.getElementById("size-guide-list").innerHTML =
+          renderSizeGuideForm();
+      };
+
+      function collectSizeGuide() {
+        const rows = document.querySelectorAll(
+          "#size-guide-list .size-guide-row",
+        );
+        productSizeGuide = Array.from(rows).map((row) => ({
+          size: row.querySelector(".sg-size")?.value || "",
+          height: row.querySelector(".sg-height")?.value || "",
+          width: row.querySelector(".sg-width")?.value || "",
+        }));
+      }
+
+      window.handleImageUpload = function (input) {
+        const files = Array.from(input.files).slice(
+          0,
+          3 - productFormImages.length,
+        );
+        files.forEach((file) => {
+          const url = URL.createObjectURL(file);
+          productFormImages.push({ url, file });
+        });
+        document.getElementById("img-preview").innerHTML =
+          renderImagePreviews();
+      };
+
+      window.removeImage = function (i) {
+        productFormImages.splice(i, 1);
+        document.getElementById("img-preview").innerHTML =
+          renderImagePreviews();
+      };
+
+      window.addImageUrl = function () {
+        const url = document.getElementById("pf-img-url")?.value.trim();
+        if (!url) return;
+        if (productFormImages.length >= 3) {
+          showToast("Max 3 images", "error");
+          return;
+        }
+        productFormImages.push({ url });
+        document.getElementById("img-preview").innerHTML =
+          renderImagePreviews();
+        document.getElementById("pf-img-url").value = "";
+      };
+
+      window.saveProduct = async function (existingId) {
+        const name = document.getElementById("pf-name")?.value?.trim();
+        const price = parseFloat(document.getElementById("pf-price")?.value);
+        if (!name || !price) {
+          showToast("Name and price are required", "error");
+          return;
+        }
+
+        const btn = document.getElementById("save-product-btn");
+        if (btn) {
+          btn.innerHTML = '<span class="spinner"></span> Saving…';
+          btn.disabled = true;
+        }
+
+        collectSizeGuide();
+
+        try {
+          // Upload file images to Firebase Storage
+          const imageUrls = [];
+          for (const img of productFormImages) {
+            if (img.file) {
+              const prodId = existingId || "prod_" + Date.now();
+              const imgRef = storageRef(
+                storage,
+                `products/${prodId}/${img.file.name}`,
+              );
+              await uploadBytes(imgRef, img.file);
+              const downloadURL = await getDownloadURL(imgRef);
+              imageUrls.push(downloadURL);
+            } else if (img.url) {
+              imageUrls.push(img.url);
+            }
+          }
+          if (!imageUrls.length)
+            imageUrls.push(
+              "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&q=80",
+            );
+
+          const oprice =
+            parseFloat(document.getElementById("pf-oprice")?.value) || null;
+          const discount = oprice
+            ? Math.round(((oprice - price) / oprice) * 100)
+            : 0;
+
+          const data = {
+            name,
+            price,
+            originalPrice: oprice,
+            discount,
+            category: document.getElementById("pf-cat")?.value,
+            badge: document.getElementById("pf-badge")?.value || null,
+            featured: document.getElementById("pf-featured")?.checked || false,
+            inStock: document.getElementById("pf-instock")?.checked !== false,
+            description: CKEDITOR.instances["pf-desc"]?.getData() || "",
+            material: document.getElementById("pf-material")?.value || "",
+            tags: (document.getElementById("pf-tags")?.value || "")
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean),
+            sizes: (document.getElementById("pf-sizes")?.value || "")
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean),
+            colors: (document.getElementById("pf-colors")?.value || "#1a1a1a")
+              .split(",")
+              .map((c) => c.trim())
+              .filter(Boolean),
+            images: imageUrls,
+            sizeGuide: productSizeGuide.filter((r) => r.size),
+            updatedAt: new Date().toISOString(),
+          };
+
+          if (existingId) {
+            await updateDoc(doc(db, "products", existingId), data);
+            const idx = ADMIN.products.findIndex((p) => p.id === existingId);
+            if (idx > -1) ADMIN.products[idx] = { ...data, id: existingId };
+            showToast("Product updated!", "success");
+          } else {
+            data.createdAt = new Date().toISOString();
+            data.rating = 5;
+            data.reviews = 0;
+            const ref = await addDoc(collection(db, "products"), data);
+            ADMIN.products.unshift({ ...data, id: ref.id });
+            showToast("Product added!", "success");
+          }
+
+          closeModal();
+          renderProducts();
+        } catch (e) {
+          showToast("Save failed: " + e.message, "error");
+          console.error(e);
+        } finally {
+          if (btn) {
+            btn.innerHTML = existingId ? "Save Changes" : "Add Product";
+            btn.disabled = false;
+          }
+        }
+      };
+
+      // ══════════════════════════════════════
+      //  CATEGORIES
+      // ══════════════════════════════════════
+      function renderCategories() {
+        const cats = ADMIN.categories;
+        document.getElementById("admin-content-area").innerHTML = `
+    <div class="admin-table-card">
+      <div class="admin-table-head">
+        <h3>Categories (${cats.length})</h3>
+        <button class="btn btn-primary btn-sm" onclick="showAddCategoryModal()">+ Add Category</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Slug</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${
+              cats.length
+                ? cats
+                    .map(
+                      (c) => `
+                <tr>
+                  <td><strong>${c.name}</strong></td>
+                  <td><span style="font-size:0.8rem;background:var(--cream);padding:3px 8px">${c.slug}</span></td>
+                  <td>
+                    <button class="btn btn-sm" style="background:var(--danger);color:white;border:none" onclick="deleteCategory('${c.firebaseId}')">Delete</button>
+                  </td>
+                </tr>`,
+                    )
+                    .join("")
+                : `<tr><td colspan="3" style="text-align:center;color:var(--gray-400);padding:32px">No categories yet. Add one to get started.</td></tr>`
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+      }
+
+      window.showAddCategoryModal = function () {
+        showModal(`
+          <div class="modal-header">
+            <h3>Add Category</h3>
+            <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--gray-400)">✕</button>
+          </div>
+          <div class="modal-body">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="form-group">
+                <label>Category Name *</label>
+                <input type="text" id="cat-name" placeholder="e.g. Women" oninput="autoSlug()">
+              </div>
+              <div class="form-group">
+                <label>Slug (auto-generated)</label>
+                <input type="text" id="cat-slug" placeholder="e.g. women" style="background:var(--gray-100)">
+                <small style="color:var(--gray-400);font-size:0.75rem">Used as the category value in products. Edit if needed.</small>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-gold" onclick="addCategory()">Save Category</button>
+          </div>`);
+      };
+
+      window.autoSlug = function () {
+        const name = document.getElementById("cat-name")?.value || "";
+        document.getElementById("cat-slug").value = name
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "");
+      };
+
+      window.addCategory = async function () {
+        const name = document.getElementById("cat-name")?.value.trim();
+        const slug = document.getElementById("cat-slug")?.value.trim();
+        if (!name || !slug) {
+          showToast("Name and slug are required", "error");
+          return;
+        }
+        if (ADMIN.categories.find((c) => c.slug === slug)) {
+          showToast("A category with this slug already exists", "error");
+          return;
+        }
+        try {
+          const data = { name, slug, createdAt: new Date().toISOString() };
+          const ref = await addDoc(collection(db, "categories"), data);
+          ADMIN.categories.push({ ...data, firebaseId: ref.id });
+          closeModal();
+          renderCategories();
+          showToast("Category added!", "success");
+        } catch (e) {
+          showToast("Failed: " + e.message, "error");
+        }
+      };
+
+      window.deleteCategory = async function (fid) {
+        if (
+          !confirm(
+            "Delete this category? Products using it will keep their current category value.",
+          )
+        )
+          return;
+        try {
+          await deleteDoc(doc(db, "categories", fid));
+          ADMIN.categories = ADMIN.categories.filter(
+            (c) => c.firebaseId !== fid,
+          );
+          renderCategories();
+          showToast("Category deleted", "success");
+        } catch (e) {
+          showToast("Failed: " + e.message, "error");
+        }
+      };
+
+      // ══════════════════════════════════════
+      //  COUPONS
+      // ══════════════════════════════════════
+      function renderCoupons() {
+        const coupons = ADMIN.coupons;
+        document.getElementById("admin-content-area").innerHTML = `
+    <div class="admin-table-card">
+      <div class="admin-table-head">
+        <h3>Discount Coupons</h3>
+        <button class="btn btn-primary btn-sm" onclick="showAddCouponModal()">+ Add Coupon</button>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Code</th><th>Type</th><th>Discount</th><th>Description</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${
+            coupons.length
+              ? coupons
+                  .map(
+                    (c) => `
+            <tr>
+              <td><strong>${c.code || ""}</strong></td>
+              <td>${c.type || "percent"}</td>
+              <td>${c.type === "percent" ? c.discount + "%" : c.type === "flat" ? "€" + c.discount : "Free Shipping"}</td>
+              <td>${c.desc || "—"}</td>
+              <td>${c.active !== false ? '<span style="color:var(--success)">✓ Active</span>' : '<span style="color:var(--gray-400)">Inactive</span>'}</td>
+              <td><button class="btn btn-sm" style="background:var(--danger);color:white;border:none" onclick="deleteCoupon('${c.firebaseId}')">Delete</button></td>
+            </tr>`,
+                  )
+                  .join("")
+              : '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:32px">No coupons yet</td></tr>'
+          }
+        </tbody>
+      </table>
+    </div>`;
+      }
+
+      window.showAddCouponModal = function () {
+        showModal(`
+    <div class="modal-header">
+      <h3>Add Coupon</h3>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:1.3rem">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group"><label>Coupon Code *</label><input type="text" id="c-code" placeholder="SUMMER30" style="text-transform:uppercase"></div>
+        <div class="form-group"><label>Discount Type</label>
+          <select id="c-type">
+            <option value="percent">Percentage (%)</option>
+            <option value="flat">Flat Amount (€)</option>
+            <option value="shipping">Free Shipping</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Discount Value</label><input type="number" id="c-val" placeholder="20"></div>
+        <div class="form-group"><label>Description</label><input type="text" id="c-desc" placeholder="20% off your order"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addCoupon()">Save Coupon</button>
+    </div>`);
+      };
+
+      window.addCoupon = async function () {
+        const code = document
+          .getElementById("c-code")
+          ?.value.trim()
+          .toUpperCase();
+        const type = document.getElementById("c-type")?.value;
+        const discount =
+          parseFloat(document.getElementById("c-val")?.value) || 0;
+        const desc = document.getElementById("c-desc")?.value;
+        if (!code) {
+          showToast("Coupon code is required", "error");
+          return;
+        }
+        try {
+          const data = {
+            code,
+            type,
+            discount,
+            desc,
+            active: true,
+            createdAt: new Date().toISOString(),
+          };
+          const ref = await addDoc(collection(db, "coupons"), data);
+          ADMIN.coupons.unshift({ ...data, firebaseId: ref.id });
+          closeModal();
+          renderCoupons();
+          showToast("Coupon added!", "success");
+        } catch (e) {
+          showToast("Failed: " + e.message, "error");
+        }
+      };
+
+      window.deleteCoupon = async function (fid) {
+        if (!confirm("Delete this coupon?")) return;
+        try {
+          await deleteDoc(doc(db, "coupons", fid));
+          ADMIN.coupons = ADMIN.coupons.filter((c) => c.firebaseId !== fid);
+          renderCoupons();
+          showToast("Coupon deleted", "success");
+        } catch (e) {
+          showToast("Failed: " + e.message, "error");
+        }
+      };
+
+      // ══════════════════════════════════════
+      //  CUSTOMERS
+      // ══════════════════════════════════════
+      function renderCustomers() {
+        const orders = ADMIN.orders;
+        const cusMap = {};
+        orders.forEach((o) => {
+          if (!o.email) return;
+          if (!cusMap[o.email])
+            cusMap[o.email] = {
+              name: o.customer,
+              email: o.email,
+              phone: o.phone || "—",
+              orders: 0,
+              total: 0,
+            };
+          cusMap[o.email].orders++;
+          cusMap[o.email].total += o.total || 0;
+        });
+        const customers = Object.values(cusMap).sort(
+          (a, b) => b.total - a.total,
+        );
+
+        document.getElementById("admin-content-area").innerHTML = `
+    <div class="admin-table-card">
+      <div class="admin-table-head">
+        <h3>Customers (${customers.length})</h3>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Orders</th><th>Total Spent</th></tr></thead>
+          <tbody>
+            ${
+              customers.length
+                ? customers
+                    .map(
+                      (c) => `
+              <tr>
+                <td><strong>${c.name || "—"}</strong></td>
+                <td style="font-size:0.85rem">${c.email}</td>
+                <td style="font-size:0.85rem">${c.phone}</td>
+                <td>${c.orders}</td>
+                <td><strong>€${c.total.toLocaleString()}</strong></td>
+              </tr>`,
+                    )
+                    .join("")
+                : '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:32px">No customers yet</td></tr>'
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+      }
+
+      // ══════════════════════════════════════
+      //  SHIPPING SETTINGS
+      // ══════════════════════════════════════
+      function renderShipping() {
+        const s = ADMIN.shipping || {
+          standard: { price: 80, days: "3–5 days" },
+          express: { price: 150, days: "1–2 days" },
+          freeThreshold: 2000,
+        };
+        document.getElementById("admin-content-area").innerHTML = `
+    <div class="admin-table-card" style="max-width:700px">
+      <div class="admin-table-head"><h3>Shipping Rates</h3></div>
+      <div style="padding:28px">
+        <table class="shipping-table" style="margin-bottom:24px">
+          <thead><tr><th>Method</th><th>Delivery Time</th><th>Price (€)</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Standard Delivery</td>
+              <td><input type="text" id="sh-std-days" value="${s.standard?.days || "3–5 days"}" style="padding:6px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none;width:100%"></td>
+              <td><input type="number" id="sh-std-price" value="${s.standard?.price || 80}" style="padding:6px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none;width:100%"></td>
+            </tr>
+            <tr>
+              <td>Express Delivery</td>
+              <td><input type="text" id="sh-exp-days" value="${s.express?.days || "1–2 days"}" style="padding:6px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none;width:100%"></td>
+              <td><input type="number" id="sh-exp-price" value="${s.express?.price || 150}" style="padding:6px;border:1.5px solid var(--gray-200);font-family:var(--font-body);font-size:0.85rem;outline:none;width:100%"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="form-group" style="margin-bottom:24px;max-width:300px">
+          <label>Free Shipping Threshold (€)</label>
+          <input type="number" id="sh-free" value="${s.freeThreshold || 2000}">
+        </div>
+        <button class="btn btn-gold" onclick="saveShipping()">Save Shipping Rates</button>
+      </div>
+    </div>`;
+      }
+
+      window.saveShipping = async function () {
+        const data = {
+          standard: {
+            name: "Standard Delivery",
+            days: document.getElementById("sh-std-days")?.value || "3–5 days",
+            price: parseFloat(
+              document.getElementById("sh-std-price")?.value || 80,
+            ),
+          },
+          express: {
+            name: "Express Delivery",
+            days: document.getElementById("sh-exp-days")?.value || "1–2 days",
+            price: parseFloat(
+              document.getElementById("sh-exp-price")?.value || 150,
+            ),
+          },
+          freeThreshold: parseFloat(
+            document.getElementById("sh-free")?.value || 2000,
+          ),
+          updatedAt: new Date().toISOString(),
+        };
+        try {
+          // Upsert settings/shipping document
+          await updateDoc(doc(db, "settings", "shipping"), data).catch(
+            async () => {
+              await addDoc(collection(db, "settings"), {
+                ...data,
+                id: "shipping",
+              });
+            },
+          );
+          ADMIN.shipping = data;
+          showToast("Shipping rates saved!", "success");
+        } catch (e) {
+          showToast("Save failed: " + e.message, "error");
+        }
+      };
+
+      // ══════════════════════════════════════
+      //  MODAL / TOAST
+      // ══════════════════════════════════════
+      window.showModal = function (html) {
+        document.getElementById("modal-content").innerHTML = html;
+        document.getElementById("modal-overlay").classList.add("show");
+      };
+      window.closeModal = function () {
+        document.getElementById("modal-overlay").classList.remove("show");
+        if (CKEDITOR.instances["pf-desc"]) {
+          CKEDITOR.instances["pf-desc"].destroy(true);
+        }
+      };
+
+      window.showToast = function (msg, type = "info") {
+        const container = document.querySelector(".toast-container");
+        if (!container) return;
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        const icons = { success: "✓", error: "✕", info: "ℹ" };
+        toast.innerHTML = `<span style="font-weight:700">${icons[type] || "•"}</span> ${msg}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add("show"), 10);
+        setTimeout(() => {
+          toast.classList.remove("show");
+          setTimeout(() => toast.remove(), 400);
+        }, 3500);
+      };
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") window.closeModal();
+      });
+      window.renderSizeGuideForm = renderSizeGuideForm;
+      window.renderImagePreviews = renderImagePreviews;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="LUXÉ — Premium fashion store offering curated collections of clothing and accessories."
+    />
+    <meta property="og:title" content="LUXÉ — Premium Fashion Store" />
+    <meta
+      property="og:description"
+      content="Discover curated fashion collections. Free shipping on orders over €2000."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <title>LUXÉ — Premium Fashion Store</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- ════ ANNOUNCEMENT BAR ════ -->
+    <div class="announcement-bar" id="announcement-bar">
+      🎉 FREE SHIPPING on orders over €2000 &nbsp;|&nbsp; Use code
+      <strong>WELCOME20</strong> for 20% off your first order
+      <button
+        class="close-announcement"
+        onclick="this.parentElement.style.display = 'none'"
+      >
+        ×
+      </button>
+    </div>
+
+    <!-- ════ HEADER ════ -->
+    <header id="header">
+      <div class="header-inner">
+        <a class="logo" onclick="showPage('home')" style="cursor: pointer"
+          >LUX<span>É</span></a
+        >
+        <nav class="main-nav">
+          <a href="index.html">Home</a>
+          <a href="shop.html" class="active" data-page="shop">Shop</a>
+          <a href="shop.html">Women</a>
+          <a href="shop.html">Men</a>
+          <a href="shop.html">Accessories</a>
+          <a data-page="about" onclick="showPage('about')">About</a>
+        </nav>
+        <div class="header-actions">
+          <div style="position: relative; display: flex; align-items: center">
+            <button
+              class="btn-icon"
+              id="search-toggle"
+              onclick="toggleSearch()"
+              title="Search"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+            <div
+              id="search-dropdown"
+              style="
+                display: none;
+                position: absolute;
+                right: 0;
+                top: 48px;
+                width: 320px;
+                background: white;
+                border: 1px solid var(--gray-200);
+                box-shadow: var(--shadow-md);
+                z-index: 200;
+                padding: 12px;
+              "
+            >
+              <div class="search-bar">
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="Search products..."
+                  onkeydown="handleSearch(event)"
+                  autofocus
+                />
+                <button onclick="handleSearch(event)">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <button
+            class="btn-icon cart-badge"
+            onclick="showPage('cart')"
+            title="Cart"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
+            <span class="cart-count" style="display: none">0</span>
+          </button>
+          <div class="hamburger" onclick="toggleMobileMenu()">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MOBILE MENU -->
+    <div class="mobile-menu" id="mobile-menu">
+      <div
+        style="
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          cursor: pointer;
+          font-size: 1.5rem;
+        "
+        onclick="toggleMobileMenu()"
+      >
+        ✕
+      </div>
+      <a
+        onclick="
+          showPage('home');
+          toggleMobileMenu();
+        "
+        >Home</a
+      >
+      <a
+        onclick="
+          showPage('shop');
+          toggleMobileMenu();
+        "
+        >Shop All</a
+      >
+      <a
+        onclick="
+          showPage('category', { cat: 'women' });
+          toggleMobileMenu();
+        "
+        >Women</a
+      >
+      <a
+        onclick="
+          showPage('category', { cat: 'men' });
+          toggleMobileMenu();
+        "
+        >Men</a
+      >
+      <a
+        onclick="
+          showPage('category', { cat: 'accessories' });
+          toggleMobileMenu();
+        "
+        >Accessories</a
+      >
+      <a
+        onclick="
+          showPage('about');
+          toggleMobileMenu();
+        "
+        >About Us</a
+      >
+      <a
+        onclick="
+          showPage('contact');
+          toggleMobileMenu();
+        "
+        >Contact</a
+      >
+      <a
+        onclick="
+          showPage('track', { orderId: '' });
+          toggleMobileMenu();
+        "
+        >Track Order</a
+      >
+      <div style="margin-top: 24px; display: flex; gap: 12px">
+        <button
+          class="btn btn-outline btn-sm"
+          onclick="
+            showPage('cart');
+            toggleMobileMenu();
+          "
+        >
+          Cart
+        </button>
+        <button
+          class="btn btn-gold btn-sm"
+          onclick="
+            showPage('shop');
+            toggleMobileMenu();
+          "
+        >
+          Shop Now
+        </button>
+      </div>
+    </div>
+
+    <!-- ════ MAIN CONTENT ════ -->
+    <main>
+      <!-- ── HOME PAGE ── -->
+      <div id="page-home" class="page">
+        <section class="hero">
+          <div class="hero-bg"></div>
+          <div class="container">
+            <div class="hero-content">
+              <div class="hero-label">New Collection 2025</div>
+              <h1>Dress With<br /><em>Intention.</em></h1>
+              <p>
+                Curated fashion that speaks to the modern wardrobe — where
+                quality meets contemporary elegance.
+              </p>
+              <div class="hero-btns">
+                <button class="btn btn-gold btn-lg" onclick="showPage('shop')">
+                  Shop the Collection
+                </button>
+                <button
+                  class="btn btn-outline-white btn-lg"
+                  onclick="showPage('category', { cat: 'women' })"
+                >
+                  Women's Edit
+                </button>
+              </div>
+              <div class="hero-stats">
+                <div>
+                  <div class="hero-stat-num">2K+</div>
+                  <div class="hero-stat-label">Happy Customers</div>
+                </div>
+                <div>
+                  <div class="hero-stat-num">150+</div>
+                  <div class="hero-stat-label">Products</div>
+                </div>
+                <div>
+                  <div class="hero-stat-num">4.9★</div>
+                  <div class="hero-stat-label">Avg Rating</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="ticker-wrap">
+          <div class="ticker">
+            <div class="ticker-item">Free Shipping Over €2000</div>
+            <div class="ticker-item">New Arrivals Weekly</div>
+            <div class="ticker-item">Premium Quality Fabrics</div>
+            <div class="ticker-item">Easy 7-Day Returns</div>
+            <div class="ticker-item">Secure Checkout</div>
+            <div class="ticker-item">Exclusive Member Deals</div>
+            <div class="ticker-item">Free Shipping Over €2000</div>
+            <div class="ticker-item">New Arrivals Weekly</div>
+            <div class="ticker-item">Premium Quality Fabrics</div>
+            <div class="ticker-item">Easy 7-Day Returns</div>
+            <div class="ticker-item">Secure Checkout</div>
+            <div class="ticker-item">Exclusive Member Deals</div>
+          </div>
+        </div>
+
+        <section class="section-pad">
+          <div class="container">
+            <div class="text-center">
+              <div class="section-subtitle">Browse by Category</div>
+              <h2 class="section-title">Shop the Collection</h2>
+            </div>
+            <div class="categories-grid" id="categories-grid"></div>
+          </div>
+        </section>
+
+        <section class="section-pad" style="background: var(--cream)">
+          <div class="container">
+            <div class="text-center mb-4">
+              <div class="section-subtitle">Handpicked for You</div>
+              <h2 class="section-title">Featured Pieces</h2>
+              <p class="section-desc">
+                Discover our most-loved styles, curated by our fashion experts.
+              </p>
+            </div>
+            <div class="products-grid" id="featured-products"></div>
+            <div class="text-center mt-4" style="margin-top: 48px">
+              <button class="btn btn-primary btn-lg" onclick="showPage('shop')">
+                View All Products →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section
+          style="
+            background: var(--black);
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+          "
+        >
+          <div
+            style="
+              position: absolute;
+              inset: 0;
+              background: url(&quot;https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1600&q=80&quot;)
+                center/cover;
+              opacity: 0.2;
+            "
+          ></div>
+          <div
+            class="container"
+            style="position: relative; z-index: 1; text-align: center"
+          >
+            <div class="section-subtitle">Limited Time Offer</div>
+            <h2
+              style="
+                font-family: var(--font-display);
+                color: white;
+                font-size: clamp(2rem, 4vw, 3.5rem);
+                margin-bottom: 16px;
+              "
+            >
+              Up to <span style="color: var(--gold)">40% Off</span><br />Summer
+              Sale
+            </h2>
+            <p
+              style="
+                color: rgba(255, 255, 255, 0.7);
+                margin-bottom: 32px;
+                max-width: 480px;
+                margin-left: auto;
+                margin-right: auto;
+              "
+            >
+              Don't miss our biggest sale of the season.
+            </p>
+            <button
+              class="btn btn-gold btn-lg"
+              onclick="showPage('category', { cat: 'sale' })"
+            >
+              Shop Sale →
+            </button>
+          </div>
+        </section>
+
+        <section class="section-pad">
+          <div class="container">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 32px;
+                text-align: center;
+              "
+            >
+              <div
+                style="padding: 32px 24px; border: 1px solid var(--gray-100)"
+              >
+                <div style="font-size: 2rem; margin-bottom: 16px">🚚</div>
+                <h3
+                  style="
+                    font-family: var(--font-display);
+                    font-size: 1.1rem;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Free Shipping
+                </h3>
+                <p>On orders over €2000</p>
+              </div>
+              <div
+                style="padding: 32px 24px; border: 1px solid var(--gray-100)"
+              >
+                <div style="font-size: 2rem; margin-bottom: 16px">↩️</div>
+                <h3
+                  style="
+                    font-family: var(--font-display);
+                    font-size: 1.1rem;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Easy Returns
+                </h3>
+                <p>7-day hassle-free returns</p>
+              </div>
+              <div
+                style="padding: 32px 24px; border: 1px solid var(--gray-100)"
+              >
+                <div style="font-size: 2rem; margin-bottom: 16px">🔒</div>
+                <h3
+                  style="
+                    font-family: var(--font-display);
+                    font-size: 1.1rem;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Secure Payment
+                </h3>
+                <p>100% secure checkout</p>
+              </div>
+              <div
+                style="padding: 32px 24px; border: 1px solid var(--gray-100)"
+              >
+                <div style="font-size: 2rem; margin-bottom: 16px">💎</div>
+                <h3
+                  style="
+                    font-family: var(--font-display);
+                    font-size: 1.1rem;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Authentic Products
+                </h3>
+                <p>Guaranteed genuine</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="newsletter">
+          <div class="container" style="position: relative; z-index: 1">
+            <div class="section-subtitle" style="color: var(--gold)">
+              Stay in the Loop
+            </div>
+            <h2>Get 20% Off Your<br />First Order</h2>
+            <p>
+              Subscribe for exclusive deals, style tips, and early access to new
+              arrivals.
+            </p>
+            <div class="newsletter-form">
+              <input type="email" placeholder="Your email address" />
+              <button
+                class="btn btn-gold"
+                onclick="
+                  showToast(
+                    'Thank you! Your discount code: WELCOME20',
+                    'success',
+                  )
+                "
+              >
+                Subscribe
+              </button>
+            </div>
+            <p style="margin-top: 16px; font-size: 0.75rem; opacity: 0.5">
+              No spam. Unsubscribe anytime.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ── SHOP PAGE ── -->
+      <div id="page-shop" class="page">
+        <div class="container" style="padding-top: 32px">
+          <div style="margin-bottom: 24px">
+            <h1
+              style="
+                font-family: var(--font-display);
+                font-size: 2.2rem;
+                margin-bottom: 4px;
+              "
+            >
+              All Products
+            </h1>
+            <p
+              id="shop-count"
+              style="font-size: 0.85rem; color: var(--gray-400)"
+            >
+              Loading...
+            </p>
+          </div>
+          <div class="shop-header">
+            <div class="filter-bar" id="filter-bar">
+              <button
+                class="filter-btn active"
+                onclick="
+                  setFilter('all');
+                  document
+                    .querySelectorAll('.filter-btn')
+                    .forEach((b) => b.classList.remove('active'));
+                  this.classList.add('active');
+                "
+              >
+                All
+              </button>
+              <button
+                class="filter-btn"
+                onclick="
+                  setFilter('women');
+                  document
+                    .querySelectorAll('.filter-btn')
+                    .forEach((b) => b.classList.remove('active'));
+                  this.classList.add('active');
+                "
+              >
+                Women
+              </button>
+              <button
+                class="filter-btn"
+                onclick="
+                  setFilter('men');
+                  document
+                    .querySelectorAll('.filter-btn')
+                    .forEach((b) => b.classList.remove('active'));
+                  this.classList.add('active');
+                "
+              >
+                Men
+              </button>
+              <button
+                class="filter-btn"
+                onclick="
+                  setFilter('accessories');
+                  document
+                    .querySelectorAll('.filter-btn')
+                    .forEach((b) => b.classList.remove('active'));
+                  this.classList.add('active');
+                "
+              >
+                Accessories
+              </button>
+              <button
+                class="filter-btn"
+                onclick="
+                  setFilter('sale');
+                  document
+                    .querySelectorAll('.filter-btn')
+                    .forEach((b) => b.classList.remove('active'));
+                  this.classList.add('active');
+                "
+              >
+                Sale 🔥
+              </button>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center">
+              <div class="search-bar" style="max-width: 220px">
+                <input
+                  type="text"
+                  id="shop-search"
+                  placeholder="Search..."
+                  oninput="
+                    APP.searchQuery = this.value;
+                    renderShop();
+                  "
+                />
+                <button>🔍</button>
+              </div>
+              <select class="sort-select" onchange="setSort(this.value)">
+                <option value="default">Featured</option>
+                <option value="price-asc">Price ↑</option>
+                <option value="price-desc">Price ↓</option>
+                <option value="rating">Best Rated</option>
+                <option value="newest">Newest</option>
+              </select>
+            </div>
+          </div>
+          <div
+            class="products-grid"
+            id="shop-grid"
+            style="padding-bottom: 80px"
+          ></div>
+        </div>
+      </div>
+
+      <!-- ── PRODUCT DETAIL PAGE ── -->
+      <div id="page-product" class="page">
+        <div class="container" id="product-detail-content"></div>
+      </div>
+
+      <!-- ── CATEGORY PAGE ── -->
+      <div id="page-category" class="page">
+        <div class="container"><div id="category-content"></div></div>
+      </div>
+
+      <!-- ── CART PAGE ── -->
+      <div id="page-cart" class="page">
+        <div class="container">
+          <div id="cart-content" style="padding-top: 12px"></div>
+        </div>
+      </div>
+
+      <!-- ── CHECKOUT PAGE ── -->
+      <div id="page-checkout" class="page">
+        <div class="container">
+          <div id="checkout-content" style="padding-top: 24px"></div>
+        </div>
+      </div>
+
+      <!-- ── ORDER SUCCESS ── -->
+      <div id="page-success" class="page">
+        <div class="container"><div id="success-content"></div></div>
+      </div>
+
+      <!-- ── ORDER TRACKING ── -->
+      <div id="page-track" class="page">
+        <div class="container"><div id="tracking-content"></div></div>
+      </div>
+
+      <!-- ── ABOUT PAGE ── -->
+      <div id="page-about" class="page">
+        <div
+          style="
+            background: var(--black);
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+          "
+        >
+          <div
+            style="
+              position: absolute;
+              inset: 0;
+              background: url(&quot;https://images.unsplash.com/photo-1445205170230-053b83016050?w=1600&q=80&quot;)
+                center/cover;
+              opacity: 0.15;
+            "
+          ></div>
+          <div class="container" style="position: relative; z-index: 1">
+            <div class="section-subtitle">Our Story</div>
+            <h1
+              style="
+                font-family: var(--font-display);
+                color: white;
+                font-size: clamp(2.5rem, 5vw, 4rem);
+              "
+            >
+              Crafted With Purpose,<br />Worn With Pride
+            </h1>
+          </div>
+        </div>
+        <div class="container section-pad">
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 60px;
+              align-items: center;
+              margin-bottom: 80px;
+            "
+          >
+            <div>
+              <div class="section-subtitle">About LUXÉ</div>
+              <h2 class="section-title" style="text-align: left">
+                Fashion That Tells Your Story
+              </h2>
+              <p style="margin: 20px 0; line-height: 2">
+                Founded in 2020, LUXÉ was born from a simple belief: great style
+                shouldn't cost a fortune. We curate premium fashion collections
+                that blend contemporary trends with timeless elegance.
+              </p>
+              <p style="line-height: 2">
+                Every piece in our collection is thoughtfully sourced, ethically
+                produced, and quality-checked to ensure you receive only the
+                finest.
+              </p>
+              <button
+                class="btn btn-primary"
+                style="margin-top: 28px"
+                onclick="showPage('shop')"
+              >
+                Shop Our Collection
+              </button>
+            </div>
+            <div
+              style="
+                aspect-ratio: 4/5;
+                overflow: hidden;
+                background: var(--gray-100);
+              "
+            >
+              <img
+                src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80"
+                alt="About LUXÉ"
+                style="width: 100%; height: 100%; object-fit: cover"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CONTACT PAGE ── -->
+      <div id="page-contact" class="page">
+        <div class="container section-pad">
+          <div style="max-width: 800px; margin: 0 auto">
+            <div class="text-center" style="margin-bottom: 48px">
+              <div class="section-subtitle">Get in Touch</div>
+              <h1 class="section-title">We'd Love to Hear From You</h1>
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 40px;
+                align-items: start;
+              "
+            >
+              <div>
+                <h3
+                  style="font-family: var(--font-display); margin-bottom: 20px"
+                >
+                  Contact Information
+                </h3>
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                    font-size: 0.88rem;
+                    color: var(--gray-600);
+                  "
+                >
+                  <div>📞 Contact us via WhatsApp or Messenger</div>
+                  <div>⏰ Mon–Sat: 10am – 8pm</div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; flex-direction: column; gap: 14px">
+                  <div class="form-group">
+                    <label>Your Name</label
+                    ><input type="text" placeholder="Your name" />
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label
+                    ><input type="email" placeholder="you@email.com" />
+                  </div>
+                  <div class="form-group">
+                    <label>Subject</label
+                    ><input type="text" placeholder="Order inquiry" />
+                  </div>
+                  <div class="form-group">
+                    <label>Message</label
+                    ><textarea
+                      placeholder="Your message..."
+                      style="
+                        height: 120px;
+                        resize: vertical;
+                        padding: 12px;
+                        border: 1.5px solid var(--gray-200);
+                        font-family: var(--font-body);
+                        outline: none;
+                        transition: var(--transition);
+                      "
+                      onfocus="this.style.borderColor = 'var(--gold)'"
+                      onblur="this.style.borderColor = 'var(--gray-200)'"
+                    ></textarea>
+                  </div>
+                  <button
+                    class="btn btn-primary btn-full"
+                    onclick="
+                      showToast(
+                        'Message sent! We\'ll reply within 24 hours.',
+                        'success',
+                      )
+                    "
+                  >
+                    Send Message
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PRIVACY ── -->
+      <div id="page-privacy" class="page">
+        <div class="container" style="max-width: 860px; padding: 60px 24px">
+          <h1 style="font-family: var(--font-display); margin-bottom: 8px">
+            Privacy Policy
+          </h1>
+          <p
+            style="
+              color: var(--gray-400);
+              margin-bottom: 40px;
+              font-size: 0.85rem;
+            "
+          >
+            Last updated: 2025
+          </p>
+          <div style="margin-bottom: 28px">
+            <h3
+              style="
+                font-family: var(--font-display);
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+              "
+            >
+              Information We Collect
+            </h3>
+            <p style="font-size: 0.9rem; line-height: 1.9">
+              We collect information you provide directly, including name,
+              email, phone, and shipping address when placing orders.
+            </p>
+          </div>
+          <div style="margin-bottom: 28px">
+            <h3
+              style="
+                font-family: var(--font-display);
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+              "
+            >
+              How We Use Your Information
+            </h3>
+            <p style="font-size: 0.9rem; line-height: 1.9">
+              Your information is used to process orders, send shipping updates,
+              and personalize your experience. We never sell your personal data.
+            </p>
+          </div>
+          <div style="margin-bottom: 28px">
+            <h3
+              style="
+                font-family: var(--font-display);
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+              "
+            >
+              Data Security
+            </h3>
+            <p style="font-size: 0.9rem; line-height: 1.9">
+              We implement industry-standard SSL encryption and secure payment
+              processing.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ════ FOOTER ════ -->
+    <footer id="main-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <a
+              class="footer-logo"
+              onclick="showPage('home')"
+              style="cursor: pointer"
+              >LUX<span>É</span></a
+            >
+            <p class="footer-desc">
+              A premium fashion destination offering curated collections that
+              blend contemporary trends with timeless elegance.
+            </p>
+            <div class="footer-socials">
+              <a href="#" class="social-link">f</a>
+              <a href="#" class="social-link">📷</a>
+            </div>
+          </div>
+          <div>
+            <div class="footer-col-title">Shop</div>
+            <ul class="footer-links">
+              <li>
+                <a onclick="showPage('category', { cat: 'women' })">Women</a>
+              </li>
+              <li><a onclick="showPage('category', { cat: 'men' })">Men</a></li>
+              <li>
+                <a onclick="showPage('category', { cat: 'accessories' })"
+                  >Accessories</a
+                >
+              </li>
+              <li><a onclick="showPage('shop')">New Arrivals</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer-col-title">Support</div>
+            <ul class="footer-links">
+              <li><a onclick="showPage('contact')">Contact Us</a></li>
+              <li>
+                <a onclick="showPage('track', { orderId: '' })">Track Order</a>
+              </li>
+              <li><a href="#">Shipping Info</a></li>
+              <li><a href="#">Returns</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer-col-title">Company</div>
+            <ul class="footer-links">
+              <li><a onclick="showPage('about')">About Us</a></li>
+              <li><a onclick="showPage('privacy')">Privacy Policy</a></li>
+              <li>
+                <a
+                  href="dashboard.html"
+                  style="color: rgba(255, 255, 255, 0.3); font-size: 0.75rem"
+                  >Admin</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div>© 2025 LUXÉ Fashion. All rights reserved.</div>
+          <div style="display: flex; gap: 16px">
+            <span>💳 Visa</span><span>💳 MasterCard</span
+            ><span>💵 Cash on Delivery</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ════ FLOATING CHAT BUTTONS ════ -->
+    <div class="floating-chat" id="floating-chat"></div>
+
+    <!-- ════ EMAIL POPUP ════ -->
+    <div class="popup-overlay" id="email-popup">
+      <div class="popup-modal">
+        <div class="popup-img">
+          <div class="popup-img-inner">
+            <div class="popup-img-text">LUXÉ</div>
+          </div>
+        </div>
+        <div class="popup-content">
+          <button class="popup-close" onclick="closePopup()">✕</button>
+          <div class="popup-label">Exclusive Offer</div>
+          <h3 class="popup-title">Get 20% Off Your First Order</h3>
+          <p class="popup-desc">
+            Subscribe to our newsletter for exclusive deals.
+          </p>
+          <div class="popup-form">
+            <input type="text" placeholder="Your Name" />
+            <input type="email" id="popup-email" placeholder="Your Email *" />
+            <button class="btn btn-gold btn-full" onclick="subscribeEmail()">
+              Claim My Discount
+            </button>
+            <div class="popup-skip" onclick="closePopup()">
+              No thanks, I'll pay full price
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TOAST CONTAINER ════ -->
+    <div class="toast-container"></div>
+
+    <!-- ════ MODAL ════ -->
+    <div
+      class="modal-overlay"
+      id="modal-overlay"
+      onclick="if (event.target === this) closeModal();"
+    >
+      <div class="modal" id="modal-content"></div>
+    </div>
+
+    <script>
+      function toggleSearch() {
+        const d = document.getElementById("search-dropdown");
+        d.style.display = d.style.display === "none" ? "block" : "none";
+        if (d.style.display === "block")
+          document.getElementById("search-input").focus();
+      }
+      document.addEventListener("click", (e) => {
+        if (
+          !e.target.closest("#search-toggle") &&
+          !e.target.closest("#search-dropdown")
+        ) {
+          document.getElementById("search-dropdown").style.display = "none";
+        }
+      });
+    </script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+// ════════════════════════════════════════
+//  firestore.rules
+//  Deploy with: firebase deploy --only firestore:rules
+// ════════════════════════════════════════
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper Functions ──────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(email) {
+      return isAuthenticated() && request.auth.token.email == email;
+    }
+
+    // ── Products ──────────────────────────
+    match /products/{productId} {
+      // Anyone can read products
+      allow read: if true;
+      // Only admins can write
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Orders ───────────────────────────
+    match /orders/{orderId} {
+      // Customers can create orders (even unauthenticated for COD)
+      allow create: if true;
+      // Customer can read their own orders; admin can read all
+      allow read: if isAdmin() ||
+        (isAuthenticated() && resource.data.email == request.auth.token.email);
+      // Only admin can update (order status changes)
+      allow update: if isAdmin();
+      // Only admin can delete
+      allow delete: if isAdmin();
+    }
+
+    // ── Users ────────────────────────────
+    match /users/{userId} {
+      // User can read their own profile; admin can read all
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      // User can create their profile on registration
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // User can update their own profile (not role); admin can update anything
+      allow update: if (isAuthenticated() && request.auth.uid == userId &&
+        !('role' in request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Reviews ──────────────────────────
+    match /reviews/{reviewId} {
+      // Anyone can read reviews
+      allow read: if true;
+      // Authenticated users can write reviews
+      allow create: if isAuthenticated();
+      // User can update/delete their own review; admin can manage all
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // ── Coupons ──────────────────────────
+    match /coupons/{couponId} {
+      // Authenticated users can read (to validate)
+      allow read: if true;
+      // Only admin can create/update/delete coupons
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Newsletter Subscribers ────────────
+    match /subscribers/{subId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
