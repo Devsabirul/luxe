@@ -14,15 +14,11 @@ const FIREBASE_CONFIG = {
   measurementId: "G-NX6V7GXSS1",
 };
 
-// ─── FB PIXEL ID (set your real pixel ID or leave empty) ───
+// ─── FB PIXEL ID ───
 const FB_PIXEL_ID = "";
 
-// ─── SHIPPING RATES (defaults, overridden by Firestore settings) ───
-let SHIPPING_RATES = {
-  standard: { name: "Standard Delivery (3–5 days)", price: 80 },
-  express: { name: "Express Delivery (1–2 days)", price: 150 },
-  freeThreshold: 2000,
-};
+// ─── SHIPPING RATES — loaded 100% from Firestore, never hardcoded ───
+let SHIPPING_RATES = null; // stays null until Firestore responds
 
 // ─── CATEGORIES ───
 const CATEGORIES = [
@@ -67,7 +63,7 @@ const APP = {
   firebaseReady: false,
 };
 
-// ─── FIREBASE REFERENCES (set after init) ───
+// ─── FIREBASE REFERENCES ───
 let _db, _collection, _getDocs, _addDoc, _query, _where, _orderBy;
 
 // ─── FIREBASE INIT ───
@@ -89,29 +85,39 @@ async function initFirebase() {
 
     APP.firebaseReady = true;
 
-    // Load products
+    // ── Load products ──
     const snap = await _getDocs(_collection(_db, "products"));
     APP.products = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
       .filter((p) => p.inStock !== false);
 
-    // Load shipping settings if available
+    // ── Load shipping settings from Firestore ──
+    // Collection: settings
+    // Document fields: standard{name,price,days}, express{name,price,days}, freeThreshold, id:"shipping"
     try {
       const settingsSnap = await _getDocs(_collection(_db, "settings"));
       settingsSnap.docs.forEach((d) => {
-        if (d.id === "shipping") {
-          const s = d.data();
-          if (s.standard) SHIPPING_RATES.standard = s.standard;
-          if (s.express) SHIPPING_RATES.express = s.express;
-          if (s.freeThreshold) SHIPPING_RATES.freeThreshold = s.freeThreshold;
+        const data = d.data();
+        if (data.id === "shipping" || d.id === "shipping") {
+          SHIPPING_RATES = {
+            standard: data.standard, // { name, price, days }
+            express: data.express, // { name, price, days }
+            freeThreshold: data.freeThreshold,
+          };
         }
       });
-    } catch (_) {}
+    } catch (e) {
+      console.error("Failed to load shipping settings:", e);
+    }
+
+    if (!SHIPPING_RATES) {
+      showToast("Could not load shipping settings. Please refresh.", "error");
+      return;
+    }
 
     renderPage(APP.currentPage, {});
     renderFeaturedProducts();
     renderHeroCategories();
-    // Build dynamic category filter buttons from Firestore data
     buildShopFilterBar();
   } catch (e) {
     console.error("Firebase init error:", e);
@@ -233,7 +239,6 @@ function renderFeaturedProducts() {
 // ─── PRODUCT CARD ───
 function renderProductCard(p) {
   const inWishlist = APP.wishlist.includes(p.id);
-  // Navigate to standalone product-details.html page
   const detailUrl = `product-details.html?id=${p.id}`;
   return `
     <div class="product-card" data-id="${p.id}">
@@ -616,6 +621,7 @@ function updateCartBadge() {
   });
 }
 
+// ─── CART PAGE ───
 function renderCart() {
   const container = document.getElementById("cart-content");
   if (!container) return;
@@ -628,11 +634,21 @@ function renderCart() {
     </div>`;
     return;
   }
+
   const subtotal = APP.cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const freeThreshold = SHIPPING_RATES.freeThreshold;
+  const freeThreshold = SHIPPING_RATES?.freeThreshold ?? null;
+  const standardPrice = SHIPPING_RATES?.standard?.price ?? null;
   const shipping =
-    subtotal >= freeThreshold ? 0 : SHIPPING_RATES.standard.price;
+    freeThreshold !== null && subtotal >= freeThreshold
+      ? 0
+      : (standardPrice ?? 0);
   const total = subtotal + shipping;
+  const shippingLabel =
+    shipping === 0
+      ? "FREE"
+      : standardPrice !== null
+        ? "€" + shipping
+        : "Calculated at checkout";
 
   container.innerHTML = `
     <div class="cart-layout">
@@ -669,8 +685,8 @@ function renderCart() {
       <div class="order-summary">
         <h3>Order Summary</h3>
         <div class="summary-row"><span>Subtotal</span><span>€${subtotal.toLocaleString()}</span></div>
-        <div class="summary-row"><span>Shipping</span><span style="color:${shipping === 0 ? "var(--success)" : "inherit"}">${shipping === 0 ? "FREE" : "€" + shipping}</span></div>
-        ${shipping > 0 ? `<p style="font-size:0.75rem;color:var(--gold);margin:8px 0">Add €${(freeThreshold - subtotal).toLocaleString()} more for free shipping!</p>` : ""}
+        <div class="summary-row"><span>Shipping</span><span style="color:${shipping === 0 ? "var(--success)" : "inherit"}">${shippingLabel}</span></div>
+        ${freeThreshold !== null && shipping > 0 ? `<p style="font-size:0.75rem;color:var(--gold);margin:8px 0">Add €${(freeThreshold - subtotal).toLocaleString()} more for free shipping!</p>` : ""}
         <div class="summary-total"><span>Total</span><span>€${total.toLocaleString()}</span></div>
         <button class="btn btn-gold btn-full" style="margin-top:20px;padding:16px" onclick="showPage('checkout')">Proceed to Checkout →</button>
         <div style="text-align:center;margin-top:16px;font-size:0.75rem;color:var(--gray-400)">🔒 Secure checkout &nbsp;|&nbsp; Free returns</div>
@@ -678,16 +694,30 @@ function renderCart() {
     </div>`;
 }
 
-// ─── CHECKOUT ───
+// ════════════════════════════════════════════════════════════
+// ─── CHECKOUT — 100% dynamic from Firestore SHIPPING_RATES ───
+// ════════════════════════════════════════════════════════════
 function renderCheckout() {
   const container = document.getElementById("checkout-content");
   if (!container) return;
+
+  // Shipping not loaded yet from Firestore — show spinner
+  if (!SHIPPING_RATES) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:80px 0">
+        <div style="font-size:2rem;margin-bottom:16px">⏳</div>
+        <p>Loading checkout options…</p>
+      </div>`;
+    return;
+  }
+
+  const { standard, express, freeThreshold } = SHIPPING_RATES;
   const subtotal = APP.cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const shipping =
-    subtotal >= SHIPPING_RATES.freeThreshold
-      ? 0
-      : SHIPPING_RATES.standard.price;
-  const total = subtotal + shipping;
+  const isFree = subtotal >= freeThreshold;
+  const initShip = isFree ? 0 : standard.price;
+  const initTotal = subtotal + initShip;
+
+  selectedPayment = "cod";
 
   container.innerHTML = `
     <div style="margin-bottom:32px">
@@ -696,6 +726,7 @@ function renderCheckout() {
     </div>
     <div class="checkout-layout">
       <div class="checkout-form">
+
         <div class="form-section">
           <h3>Contact Information</h3>
           <div class="form-grid">
@@ -705,6 +736,7 @@ function renderCheckout() {
             <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" placeholder="+39 123 456 789"></div>
           </div>
         </div>
+
         <div class="form-section">
           <h3>Shipping Address</h3>
           <div class="form-grid full">
@@ -722,8 +754,8 @@ function renderCheckout() {
             </div>
             <div class="form-group"><label>Shipping Method</label>
               <select id="shipping-method" onchange="updateCheckoutTotal()">
-                <option value="${SHIPPING_RATES.standard.price}">${SHIPPING_RATES.standard.name} — €${SHIPPING_RATES.standard.price}</option>
-                <option value="${SHIPPING_RATES.express.price}">${SHIPPING_RATES.express.name} — €${SHIPPING_RATES.express.price}</option>
+                <option value="${standard.price}">🚚 ${standard.name} (${standard.days}) — €${standard.price}</option>
+                <option value="${express.price}">⚡ ${express.name} (${express.days}) — €${express.price}</option>
               </select>
             </div>
           </div>
@@ -733,6 +765,7 @@ function renderCheckout() {
             </div>
           </div>
         </div>
+
         <div class="form-section">
           <h3>Payment Method</h3>
           <div class="payment-methods">
@@ -748,13 +781,15 @@ function renderCheckout() {
             </div>
           </div>
         </div>
+
         <button class="btn btn-gold btn-full" style="padding:18px;font-size:0.95rem" onclick="placeOrder()" id="place-order-btn">
-          Place Order — €${total.toLocaleString()}
+          Place Order — €${initTotal.toLocaleString()}
         </button>
         <p style="text-align:center;font-size:0.75rem;color:var(--gray-400);margin-top:12px">
           🔒 Secure checkout. By placing an order you agree to our Terms &amp; Privacy Policy.
         </p>
       </div>
+
       <div class="order-summary" style="position:sticky;top:90px;height:fit-content">
         <h3>Order Summary</h3>
         ${APP.cart
@@ -771,27 +806,34 @@ function renderCheckout() {
           )
           .join("")}
         <div class="summary-row" style="margin-top:8px"><span>Subtotal</span><span>€${subtotal.toLocaleString()}</span></div>
-        <div class="summary-row"><span>Shipping</span><span id="checkout-shipping-display">${shipping === 0 ? "FREE" : "€" + shipping}</span></div>
-        <div class="summary-total"><span>Total</span><span id="checkout-total-display">€${total.toLocaleString()}</span></div>
+        <div class="summary-row"><span>Shipping</span><span id="checkout-shipping-display">${isFree ? "FREE" : "€" + initShip}</span></div>
+        <div class="summary-total"><span>Total</span><span id="checkout-total-display">€${initTotal.toLocaleString()}</span></div>
       </div>
     </div>`;
 }
 
 function updateCheckoutTotal() {
+  if (!SHIPPING_RATES) return;
+
   const subtotal = APP.cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const selectedShipping = parseFloat(
-    document.getElementById("shipping-method")?.value ||
-      SHIPPING_RATES.standard.price,
-  );
-  const shipping =
-    subtotal >= SHIPPING_RATES.freeThreshold ? 0 : selectedShipping;
+  const shippingSelect = document.getElementById("shipping-method");
+  if (!shippingSelect) return;
+
+  const selectedPrice = parseFloat(shippingSelect.value);
+
+  const shipping = selectedPrice; // no free logic
   const total = subtotal + shipping;
+
+  // Update Shipping display
   const shipDisplay = document.getElementById("checkout-shipping-display");
+  if (shipDisplay) shipDisplay.textContent = "€" + shipping;
+
+  // Update Total display
   const totalDisplay = document.getElementById("checkout-total-display");
-  const btn = document.getElementById("place-order-btn");
-  if (shipDisplay)
-    shipDisplay.textContent = shipping === 0 ? "FREE" : "€" + shipping;
   if (totalDisplay) totalDisplay.textContent = "€" + total.toLocaleString();
+
+  // Update Place Order button
+  const btn = document.getElementById("place-order-btn");
   if (btn) btn.textContent = `Place Order — €${total.toLocaleString()}`;
 }
 
@@ -804,6 +846,7 @@ function selectPayment(el, method) {
   selectedPayment = method;
 }
 
+// ─── PLACE ORDER ───
 async function placeOrder() {
   const firstName = document.getElementById("first-name")?.value?.trim();
   const lastName = document.getElementById("last-name")?.value?.trim();
@@ -839,6 +882,12 @@ async function placeOrder() {
   const shipping = subtotal >= SHIPPING_RATES.freeThreshold ? 0 : shippingCost;
   const total = subtotal + shipping;
 
+  // Resolve label from Firestore data
+  const shippingLabel =
+    shippingCost === SHIPPING_RATES.express.price
+      ? `${SHIPPING_RATES.express.name} (${SHIPPING_RATES.express.days})`
+      : `${SHIPPING_RATES.standard.name} (${SHIPPING_RATES.standard.days})`;
+
   const orderData = {
     id: orderId,
     customer: `${firstName} ${lastName}`,
@@ -854,8 +903,10 @@ async function placeOrder() {
       color: i.color,
       productId: i.productId,
     })),
-    total,
+    subtotal,
     shipping,
+    shippingLabel,
+    total,
     status: "pending",
     payment: selectedPayment,
     date: new Date().toISOString().split("T")[0],
@@ -863,7 +914,6 @@ async function placeOrder() {
     customerImages: customerUploadedImages,
   };
 
-  // Save to Firestore
   if (APP.firebaseReady && _db) {
     try {
       await _addDoc(_collection(_db, "orders"), orderData);
@@ -900,6 +950,7 @@ async function placeOrder() {
   showPage("success", { orderId, total, email });
 }
 
+// ─── SUCCESS PAGE ───
 function renderSuccess(params) {
   const container = document.getElementById("success-content");
   if (!container) return;
@@ -970,28 +1021,35 @@ function renderCategory(cat) {
 }
 
 // ─── DYNAMIC SHOP FILTER BAR ───
-// Called after products load from Firestore.
-// Reads unique categories from APP.products and injects filter buttons
-// into #filter-bar in the shop page without changing any design.
 function buildShopFilterBar() {
   var filterBar = document.getElementById("filter-bar");
   if (!filterBar) return;
-
-  // Get unique categories from loaded products
-  var cats = [...new Set(APP.products.map(function(p) { return p.category; }).filter(Boolean))];
-
-  // Reset to "All" button only, then add one button per category
-  filterBar.innerHTML = '<button class="filter-btn ' + (APP.filterCategory === "all" ? "active" : "") + '" onclick="setFilter(\'all\');document.querySelectorAll(\'#filter-bar .filter-btn\').forEach(function(b){b.classList.remove(\'active\')});this.classList.add(\'active\')">All</button>';
-
-  cats.forEach(function(cat) {
+  var cats = [
+    ...new Set(
+      APP.products
+        .map(function (p) {
+          return p.category;
+        })
+        .filter(Boolean),
+    ),
+  ];
+  filterBar.innerHTML =
+    '<button class="filter-btn ' +
+    (APP.filterCategory === "all" ? "active" : "") +
+    "\" onclick=\"setFilter('all');document.querySelectorAll('#filter-bar .filter-btn').forEach(function(b){b.classList.remove('active')});this.classList.add('active')\">All</button>";
+  cats.forEach(function (cat) {
     var label = cat.charAt(0).toUpperCase() + cat.slice(1);
-    var isActive = APP.filterCategory === cat;
     var btn = document.createElement("button");
-    btn.className = "filter-btn" + (isActive ? " active" : "");
+    btn.className =
+      "filter-btn" + (APP.filterCategory === cat ? " active" : "");
     btn.textContent = label;
     btn.setAttribute("data-cat", cat);
-    btn.onclick = function() {
-      document.querySelectorAll("#filter-bar .filter-btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.onclick = function () {
+      document
+        .querySelectorAll("#filter-bar .filter-btn")
+        .forEach(function (b) {
+          b.classList.remove("active");
+        });
       this.classList.add("active");
       setFilter(cat);
     };
@@ -1001,12 +1059,8 @@ function buildShopFilterBar() {
 
 function setFilter(cat) {
   APP.filterCategory = cat;
-  // On the shop page, render the shop grid; on category pages, render category view.
-  if (APP.currentPage === "shop") {
-    renderShop();
-  } else {
-    renderCategory(cat);
-  }
+  if (APP.currentPage === "shop") renderShop();
+  else renderCategory(cat);
 }
 function setSort(val) {
   APP.sortBy = val;
@@ -1038,9 +1092,7 @@ async function renderTracking(orderId) {
 
   container.innerHTML = `<div class="loading-overlay" style="padding:80px 0;text-align:center"><div style="font-size:1.5rem">🔍 Looking up your order…</div></div>`;
 
-  // Try local memory first, then Firestore
   let order = APP.orders.find((o) => o.id === orderId);
-
   if (!order && APP.firebaseReady && _db) {
     try {
       const q = _query(_collection(_db, "orders"), _where("id", "==", orderId));
@@ -1064,7 +1116,6 @@ async function renderTracking(orderId) {
   }
 
   const steps = ["pending", "confirmed", "shipped", "delivered"];
-  const currentStep = steps.indexOf(order.status || "pending");
   const stepData = [
     { title: "Order Placed", desc: "Your order has been received", icon: "📝" },
     {
@@ -1075,6 +1126,7 @@ async function renderTracking(orderId) {
     { title: "Shipped", desc: "Your order is on its way", icon: "🚚" },
     { title: "Delivered", desc: "Package delivered successfully", icon: "🏠" },
   ];
+  const currentStep = steps.indexOf(order.status || "pending");
 
   container.innerHTML = `
     <div style="max-width:640px;margin:60px auto;padding:0 24px">
@@ -1083,7 +1135,6 @@ async function renderTracking(orderId) {
       </div>
       <h1 style="font-family:var(--font-display);font-size:2rem;margin-bottom:8px">Order Tracking</h1>
       <p style="margin-bottom:32px;color:var(--gray-600)">Order ID: <strong>${order.id}</strong></p>
-
       <div style="background:var(--cream);padding:24px;margin-bottom:32px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:0.85rem">
           <div><span style="color:var(--gray-400)">Customer</span><br><strong>${order.customer || "—"}</strong></div>
@@ -1093,7 +1144,6 @@ async function renderTracking(orderId) {
         </div>
         ${order.address ? `<div style="margin-top:12px;font-size:0.82rem;color:var(--gray-600)"><span style="color:var(--gray-400)">Delivery Address:</span> ${order.address}</div>` : ""}
       </div>
-
       <div class="tracking-steps">
         ${stepData
           .map(
@@ -1112,7 +1162,6 @@ async function renderTracking(orderId) {
           )
           .join("")}
       </div>
-
       <div style="margin-top:32px;display:flex;gap:12px">
         <button class="btn btn-outline" onclick="showPage('home')">← Back to Home</button>
         <button class="btn btn-primary" onclick="showPage('shop')">Shop More</button>
@@ -1186,7 +1235,6 @@ function subscribeEmail() {
     showToast("Please enter your email", "error");
     return;
   }
-  // Save to Firestore subscribers
   if (APP.firebaseReady && _db) {
     _addDoc(_collection(_db, "subscribers"), {
       email,
